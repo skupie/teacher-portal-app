@@ -1,4 +1,17 @@
+package top.smscloud.basic.student.data.remote
+
+import top.smscloud.basic.student.data.remote.dto.ApiMessage
+import top.smscloud.basic.student.data.remote.dto.LoginRequest
+import top.smscloud.basic.student.data.remote.dto.LoginResponse
+import top.smscloud.basic.student.data.remote.dto.RegisterDeviceRequest
+import top.smscloud.basic.student.data.remote.dto.UnregisterDeviceRequest
+import retrofit2.http.Body
+import retrofit2.http.Header
+import retrofit2.http.HTTP
+import retrofit2.http.POST
+
 interface SmsApi {
+
     @POST("api/mobile/login")
     suspend fun login(@Body body: LoginRequest): LoginResponse
 
@@ -15,5 +28,7 @@ interface SmsApi {
     ): ApiMessage
 
     @POST("api/mobile/logout")
-    suspend fun logout(@Header("Authorization") bearer: String): ApiMessage
+    suspend fun logout(
+        @Header("Authorization") bearer: String
+    ): ApiMessage
 }
