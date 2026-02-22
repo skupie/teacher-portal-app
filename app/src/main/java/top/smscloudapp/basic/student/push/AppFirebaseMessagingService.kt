@@ -1,5 +1,6 @@
 package top.smscloud.basic.student.push
 
+import top.smscloud.basic.student.BuildConfig
 import android.os.Build
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -7,7 +8,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import top.smscloud.basic.student.BuildConfig
 import top.smscloud.basic.student.data.remote.ApiClient
 import top.smscloud.basic.student.data.remote.dto.RegisterDeviceRequest
 import top.smscloud.basic.student.data.session.SessionManager
