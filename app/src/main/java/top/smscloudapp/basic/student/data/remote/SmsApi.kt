@@ -1,10 +1,10 @@
-package top.smscloud.basic.student.data.remote
+package top.smscloudapp.basic.student.data.remote
 
-import top.smscloud.basic.student.data.remote.dto.ApiMessage
-import top.smscloud.basic.student.data.remote.dto.LoginRequest
-import top.smscloud.basic.student.data.remote.dto.LoginResponse
-import top.smscloud.basic.student.data.remote.dto.RegisterDeviceRequest
-import top.smscloud.basic.student.data.remote.dto.UnregisterDeviceRequest
+import top.smscloudapp.basic.student.data.remote.dto.ApiMessage
+import top.smscloudapp.basic.student.data.remote.dto.LoginRequest
+import top.smscloudapp.basic.student.data.remote.dto.LoginResponse
+import top.smscloudapp.basic.student.data.remote.dto.RegisterDeviceRequest
+import top.smscloudapp.basic.student.data.remote.dto.UnregisterDeviceRequest
 import retrofit2.http.Body
 import retrofit2.http.Header
 import retrofit2.http.HTTP
