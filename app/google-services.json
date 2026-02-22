@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "979207820959",
+    "project_id": "test-d5f56",
+    "storage_bucket": "test-d5f56.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:979207820959:android:7af84cf8a2981d490ff4aa",
+        "android_client_info": {
+          "package_name": "top.smscloudapp.basic.student"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEgMXilGqB3V9pXKXOTTBwFPGVx5hVRLs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
