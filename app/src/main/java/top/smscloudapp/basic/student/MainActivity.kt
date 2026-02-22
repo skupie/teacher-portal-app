@@ -18,6 +18,12 @@ class MainActivity : AppCompatActivity() {
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener {
+            if (it.isSuccessful) {
+                val token = it.result
+                Toast.makeText(this, token, Toast.LENGTH_LONG).show()
+            }
+        }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
