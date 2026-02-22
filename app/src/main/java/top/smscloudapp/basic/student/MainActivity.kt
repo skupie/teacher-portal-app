@@ -9,6 +9,8 @@ import android.os.Environment
 import android.webkit.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.firebase.messaging.FirebaseMessaging
+import android.widget.Toast
 
 class MainActivity : AppCompatActivity() {
 
