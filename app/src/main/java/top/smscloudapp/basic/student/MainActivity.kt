@@ -11,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.firebase.messaging.FirebaseMessaging
 import android.widget.Toast
+import android.webkit.CookieManager
+import java.util.HashMap
 
 class MainActivity : AppCompatActivity() {
 
@@ -77,6 +79,39 @@ class MainActivity : AppCompatActivity() {
             request.setDescription("Downloading file...")
             request.setNotificationVisibility(
                 DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
+
+
+                webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
+
+    // If it's a blob URL, WebView DownloadManager can't handle it.
+    if (url.startsWith("blob:")) {
+        // Optional: show message
+        // You can implement JS bridge later if your site uses blob downloads
+        return@setDownloadListener
+    }
+
+    val request = DownloadManager.Request(Uri.parse(url))
+    request.setMimeType(mimeType)
+
+    // Add cookies for authenticated downloads (Laravel)
+    val cookies = CookieManager.getInstance().getCookie(url)
+    if (!cookies.isNullOrEmpty()) {
+        request.addRequestHeader("Cookie", cookies)
+    }
+
+    request.addRequestHeader("User-Agent", userAgent)
+    request.setTitle(URLUtil.guessFileName(url, contentDisposition, mimeType))
+    request.setDescription("Downloading file...")
+    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+
+    request.setDestinationInExternalPublicDir(
+        Environment.DIRECTORY_DOWNLOADS,
+        URLUtil.guessFileName(url, contentDisposition, mimeType)
+    )
+
+    val dm = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+    dm.enqueue(request)
+}
             )
 
             request.setDestinationInExternalPublicDir(
