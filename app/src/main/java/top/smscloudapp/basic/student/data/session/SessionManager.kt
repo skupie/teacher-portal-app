@@ -1,4 +1,4 @@
-package top.smscloud.basic.student.data.session
+package top.smscloudapp.basic.student.data.session
 
 import android.content.Context
 
