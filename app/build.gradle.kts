@@ -7,13 +7,16 @@ plugins {
 android {
     namespace = "top.smscloudapp.basic.student"
     compileSdk = 34
-
+    
     defaultConfig {
-        applicationId = "top.smscloudapp.basic.student"
-        minSdk = 21
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+            applicationId = "top.smscloudapp.basic.student"
+            minSdk = 21
+            targetSdk = 34
+            versionCode = 1
+            versionName = "1.0"
+            buildFeatures {
+            buildConfig = true
+        }
     }
 
     buildTypes {
