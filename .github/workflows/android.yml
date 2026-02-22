@@ -1,4 +1,4 @@
-name: Build APK (No Wrapper)
+name: Build APK (Gradle 8.2.1)
 
 on:
   workflow_dispatch:
@@ -17,8 +17,11 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+      - name: Install Gradle 8.2.1
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-8.2.1-bin.zip
+          unzip -q gradle-8.2.1-bin.zip
+          echo "$PWD/gradle-8.2.1/bin" >> $GITHUB_PATH
 
       - name: Build Debug APK
         run: gradle :app:assembleDebug --stacktrace
