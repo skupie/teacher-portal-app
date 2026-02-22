@@ -3,13 +3,13 @@ package top.smscloud.basic.student.data.repo
 import android.os.Build
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.tasks.await
-import top.smscloud.basic.student.BuildConfig
-import top.smscloud.basic.student.data.remote.SmsApi
-import top.smscloud.basic.student.data.remote.dto.LoginRequest
-import top.smscloud.basic.student.data.remote.dto.LoginResponse
-import top.smscloud.basic.student.data.remote.dto.RegisterDeviceRequest
-import top.smscloud.basic.student.data.remote.dto.UnregisterDeviceRequest
-import top.smscloud.basic.student.data.session.SessionManager
+import top.smscloudapp.basic.student.BuildConfig
+import top.smscloudapp.basic.student.data.remote.SmsApi
+import top.smscloudapp.basic.student.data.remote.dto.LoginRequest
+import top.smscloudapp.basic.student.data.remote.dto.LoginResponse
+import top.smscloudapp.basic.student.data.remote.dto.RegisterDeviceRequest
+import top.smscloudapp.basic.student.data.remote.dto.UnregisterDeviceRequest
+import top.smscloudapp.basic.student.data.session.SessionManager
 
 class AuthRepository(
     private val api: SmsApi,
