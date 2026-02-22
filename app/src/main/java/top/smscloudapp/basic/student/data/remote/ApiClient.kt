@@ -1,4 +1,4 @@
-package top.smscloud.basic.student.data.remote
+package top.smscloudapp.basic.student.data.remote
 
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
