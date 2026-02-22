@@ -25,6 +25,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val swipeRefresh = findViewById<SwipeRefreshLayout>(R.id.swipeRefresh)
+        webView = findViewById(R.id.webView)
+
         // OPTIONAL: Get FCM Token (Remove later in production)
         FirebaseMessaging.getInstance().token.addOnCompleteListener {
             if (it.isSuccessful) {
@@ -32,9 +35,6 @@ class MainActivity : AppCompatActivity() {
                 android.util.Log.d("FCM_TOKEN", token)
             }
         }
-
-        val swipeRefresh = findViewById<SwipeRefreshLayout>(R.id.swipeRefresh)
-        webView = findViewById(R.id.webView)
 
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // FILE DOWNLOAD SUPPORT (PDF / Excel / CSV + Laravel Auth Cookies)
+        // FILE DOWNLOAD SUPPORT
         webView.setDownloadListener(object : DownloadListener {
             override fun onDownloadStart(
                 url: String?,
@@ -108,7 +108,22 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        webView.loadUrl("https://students.basic.smscloudapp.top")
+        // 🔥 IMPORTANT PART (Rotation Safe)
+        if (savedInstanceState != null) {
+            webView.restoreState(savedInstanceState)
+        } else {
+            webView.loadUrl("https://students.basic.smscloudapp.top")
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        webView.saveState(outState)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        webView.restoreState(savedInstanceState)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
