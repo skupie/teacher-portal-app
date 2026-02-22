@@ -19,11 +19,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         FirebaseMessaging.getInstance().token.addOnCompleteListener {
-            if (it.isSuccessful) {
-                val token = it.result
-                Toast.makeText(this, token, Toast.LENGTH_LONG).show()
-            }
-        }
+    if (it.isSuccessful) {
+        val token = it.result
+
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("FCM Token")
+            .setMessage(token)
+            .setPositiveButton("OK", null)
+            .show()
+    }
+}
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
