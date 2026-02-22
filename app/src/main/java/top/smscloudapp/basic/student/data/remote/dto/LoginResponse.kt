@@ -1,4 +1,4 @@
-package top.smscloud.basic.student.data.remote.dto
+package top.smscloudapp.basic.student.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
 
