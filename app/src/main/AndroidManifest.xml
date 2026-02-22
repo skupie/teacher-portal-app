@@ -7,10 +7,13 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:allowBackup="true"
         android:label="Basic Student"
         android:requestLegacyExternalStorage="true"
         android:theme="@style/Theme.Material3.DayNight.NoActionBar">
+        
         
         <activity android:name=".MainActivity"
             android:exported="true">
