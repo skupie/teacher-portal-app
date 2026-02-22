@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 object ApiClient {
 
     // Replace with your Laravel API base URL (must end with /)
-    private const val BASE_URL = "https://your-domain.com/"
+    private const val BASE_URL = "https://students.basic.smscloudapp.top/"
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
