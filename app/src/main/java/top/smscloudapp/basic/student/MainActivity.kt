@@ -1,18 +1,20 @@
 package top.smscloudapp.basic.student
 
-import android.Manifest
 import android.app.DownloadManager
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import android.webkit.*
+import android.webkit.CookieManager
+import android.webkit.DownloadListener
+import android.webkit.URLUtil
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.firebase.messaging.FirebaseMessaging
-import android.widget.Toast
-import android.webkit.CookieManager
-import java.util.HashMap
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,19 +22,16 @@ class MainActivity : AppCompatActivity() {
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        FirebaseMessaging.getInstance().token.addOnCompleteListener {
-    if (it.isSuccessful) {
-        val token = it.result
-
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("FCM Token")
-            .setMessage(token)
-            .setPositiveButton("OK", null)
-            .show()
-    }
-}
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // OPTIONAL: Get FCM Token (Remove later in production)
+        FirebaseMessaging.getInstance().token.addOnCompleteListener {
+            if (it.isSuccessful) {
+                val token = it.result
+                android.util.Log.d("FCM_TOKEN", token)
+            }
+        }
 
         val swipeRefresh = findViewById<SwipeRefreshLayout>(R.id.swipeRefresh)
         webView = findViewById(R.id.webView)
@@ -52,7 +51,7 @@ class MainActivity : AppCompatActivity() {
             webView.reload()
         }
 
-        // FILE UPLOAD
+        // FILE UPLOAD SUPPORT
         webView.webChromeClient = object : WebChromeClient() {
             override fun onShowFileChooser(
                 webView: WebView?,
@@ -69,59 +68,45 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // FILE DOWNLOAD
-        webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
+        // FILE DOWNLOAD SUPPORT (PDF / Excel / CSV + Laravel Auth Cookies)
+        webView.setDownloadListener(object : DownloadListener {
+            override fun onDownloadStart(
+                url: String?,
+                userAgent: String?,
+                contentDisposition: String?,
+                mimeType: String?,
+                contentLength: Long
+            ) {
+                if (url == null) return
 
-            val request = DownloadManager.Request(Uri.parse(url))
-            request.setMimeType(mimeType)
-            request.addRequestHeader("User-Agent", userAgent)
-            request.setTitle(URLUtil.guessFileName(url, contentDisposition, mimeType))
-            request.setDescription("Downloading file...")
-            request.setNotificationVisibility(
-                DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
+                if (url.startsWith("blob:")) {
+                    return
+                }
 
+                val request = DownloadManager.Request(Uri.parse(url))
+                request.setMimeType(mimeType)
 
-                webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
+                val cookies = CookieManager.getInstance().getCookie(url)
+                if (!cookies.isNullOrEmpty()) {
+                    request.addRequestHeader("Cookie", cookies)
+                }
 
-    // If it's a blob URL, WebView DownloadManager can't handle it.
-    if (url.startsWith("blob:")) {
-        // Optional: show message
-        // You can implement JS bridge later if your site uses blob downloads
-        return@setDownloadListener
-    }
+                request.addRequestHeader("User-Agent", userAgent ?: "")
+                request.setTitle(URLUtil.guessFileName(url, contentDisposition, mimeType))
+                request.setDescription("Downloading file...")
+                request.setNotificationVisibility(
+                    DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
+                )
 
-    val request = DownloadManager.Request(Uri.parse(url))
-    request.setMimeType(mimeType)
+                request.setDestinationInExternalPublicDir(
+                    Environment.DIRECTORY_DOWNLOADS,
+                    URLUtil.guessFileName(url, contentDisposition, mimeType)
+                )
 
-    // Add cookies for authenticated downloads (Laravel)
-    val cookies = CookieManager.getInstance().getCookie(url)
-    if (!cookies.isNullOrEmpty()) {
-        request.addRequestHeader("Cookie", cookies)
-    }
-
-    request.addRequestHeader("User-Agent", userAgent)
-    request.setTitle(URLUtil.guessFileName(url, contentDisposition, mimeType))
-    request.setDescription("Downloading file...")
-    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-
-    request.setDestinationInExternalPublicDir(
-        Environment.DIRECTORY_DOWNLOADS,
-        URLUtil.guessFileName(url, contentDisposition, mimeType)
-    )
-
-    val dm = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
-    dm.enqueue(request)
-}
-            )
-
-            request.setDestinationInExternalPublicDir(
-                Environment.DIRECTORY_DOWNLOADS,
-                URLUtil.guessFileName(url, contentDisposition, mimeType)
-            )
-
-            val dm = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
-            dm.enqueue(request)
-        }
+                val dm = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+                dm.enqueue(request)
+            }
+        })
 
         webView.loadUrl("https://students.basic.smscloudapp.top")
     }
