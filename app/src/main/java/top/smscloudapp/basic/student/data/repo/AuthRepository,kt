@@ -1,4 +1,4 @@
-package top.smscloud.basic.student.data.repo
+package top.smscloudapp.basic.student.data.repo
 
 import android.os.Build
 import com.google.firebase.messaging.FirebaseMessaging
