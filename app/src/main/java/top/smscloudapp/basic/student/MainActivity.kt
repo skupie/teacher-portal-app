@@ -21,10 +21,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
 
-    // 🔥 ADD THESE
-    private var tokenSent = false
+    // ✅ Change only if your domain/path changes
     private val BASE_URL = "https://students.basic.smscloudapp.top"
-    private val AFTER_LOGIN_PATH = "/student-portal" // ⚠️ CHANGE if different
+    private val AFTER_LOGIN_PATH = "/student-portal"
+
+    // Avoid sending multiple times
+    private var tokenSent = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +35,7 @@ class MainActivity : AppCompatActivity() {
         val swipeRefresh = findViewById<SwipeRefreshLayout>(R.id.swipeRefresh)
         webView = findViewById(R.id.webView)
 
-        // Enable cookies
+        // Cookies required for session login in WebView
         CookieManager.getInstance().setAcceptCookie(true)
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
 
@@ -44,11 +46,11 @@ class MainActivity : AppCompatActivity() {
 
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
                 swipeRefresh.isRefreshing = false
 
                 if (view != null && url != null) {
-
-                    // 🚀 SEND TOKEN AFTER LOGIN PAGE LOAD
+                    // ✅ After user reaches post-login page, send token once
                     if (!tokenSent && url.contains(AFTER_LOGIN_PATH)) {
                         tokenSent = true
                         sendFcmTokenToLaravel(view)
@@ -115,6 +117,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        // Rotation safe load/restore
         if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState)
         } else {
@@ -122,23 +125,38 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // 🔥 FUNCTION TO SEND TOKEN
+    /**
+     * ✅ Sends FCM token to Laravel web route using current WebView session cookie.
+     * Works with Laravel 11 CSRF by reading <meta name="csrf-token"> from the page.
+     *
+     * Laravel route must exist: POST /push/register (middleware: auth)
+     */
     private fun sendFcmTokenToLaravel(webView: WebView) {
-
         FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
             if (token.isNullOrBlank()) return@addOnSuccessListener
 
             val js = """
-                fetch('$BASE_URL/push/register', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                  },
-                  body: JSON.stringify({ device_token: '$token' })
-                }).then(r => r.json())
-                  .then(d => console.log('push saved', d))
-                  .catch(e => console.log('push error', e));
+                (function() {
+                    try {
+                        var meta = document.querySelector('meta[name="csrf-token"]');
+                        var csrf = meta ? meta.getAttribute('content') : null;
+
+                        fetch('$BASE_URL/push/register', {
+                          method: 'POST',
+                          headers: Object.assign({
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                          }, csrf ? {'X-CSRF-TOKEN': csrf} : {}),
+                          body: JSON.stringify({ device_token: '$token' }),
+                          credentials: 'include'
+                        })
+                        .then(function(r){ return r.json().catch(function(){ return {}; }); })
+                        .then(function(d){ console.log('push saved', d); })
+                        .catch(function(e){ console.log('push error', e); });
+                    } catch (e) {
+                        console.log('push exception', e);
+                    }
+                })();
             """.trimIndent()
 
             webView.evaluateJavascript(js, null)
