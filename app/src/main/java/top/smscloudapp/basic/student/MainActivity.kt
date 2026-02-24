@@ -21,6 +21,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
 
+    // 🔥 ADD THESE
+    private var tokenSent = false
+    private val BASE_URL = "https://students.basic.smscloudapp.top"
+    private val AFTER_LOGIN_PATH = "/student-portal" // ⚠️ CHANGE if different
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -28,13 +33,9 @@ class MainActivity : AppCompatActivity() {
         val swipeRefresh = findViewById<SwipeRefreshLayout>(R.id.swipeRefresh)
         webView = findViewById(R.id.webView)
 
-        // OPTIONAL: Get FCM Token (Remove later in production)
-        FirebaseMessaging.getInstance().token.addOnCompleteListener {
-            if (it.isSuccessful) {
-                val token = it.result
-                android.util.Log.d("FCM_TOKEN", token)
-            }
-        }
+        // Enable cookies
+        CookieManager.getInstance().setAcceptCookie(true)
+        CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
 
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
@@ -44,6 +45,15 @@ class MainActivity : AppCompatActivity() {
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 swipeRefresh.isRefreshing = false
+
+                if (view != null && url != null) {
+
+                    // 🚀 SEND TOKEN AFTER LOGIN PAGE LOAD
+                    if (!tokenSent && url.contains(AFTER_LOGIN_PATH)) {
+                        tokenSent = true
+                        sendFcmTokenToLaravel(view)
+                    }
+                }
             }
         }
 
@@ -78,10 +88,7 @@ class MainActivity : AppCompatActivity() {
                 contentLength: Long
             ) {
                 if (url == null) return
-
-                if (url.startsWith("blob:")) {
-                    return
-                }
+                if (url.startsWith("blob:")) return
 
                 val request = DownloadManager.Request(Uri.parse(url))
                 request.setMimeType(mimeType)
@@ -108,11 +115,33 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        // 🔥 IMPORTANT PART (Rotation Safe)
         if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState)
         } else {
-            webView.loadUrl("https://students.basic.smscloudapp.top")
+            webView.loadUrl(BASE_URL)
+        }
+    }
+
+    // 🔥 FUNCTION TO SEND TOKEN
+    private fun sendFcmTokenToLaravel(webView: WebView) {
+
+        FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+            if (token.isNullOrBlank()) return@addOnSuccessListener
+
+            val js = """
+                fetch('$BASE_URL/push/register', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                  },
+                  body: JSON.stringify({ device_token: '$token' })
+                }).then(r => r.json())
+                  .then(d => console.log('push saved', d))
+                  .catch(e => console.log('push error', e));
+            """.trimIndent()
+
+            webView.evaluateJavascript(js, null)
         }
     }
 
