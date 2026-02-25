@@ -1,4 +1,4 @@
-package top.smscloudapp.basic.student
+package top.smscloudapp.basic.teacher
 
 import android.app.DownloadManager
 import android.content.Intent
@@ -14,7 +14,6 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,11 +21,9 @@ class MainActivity : AppCompatActivity() {
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
 
     // ✅ Change only if your domain/path changes
-    private val BASE_URL = "https://students.basic.smscloudapp.top"
-    private val AFTER_LOGIN_PATH = "/student-portal"
+    private val BASE_URL = "https://basic.smscloudapp.top/teacher/login"
 
     // Avoid sending multiple times
-    private var tokenSent = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
