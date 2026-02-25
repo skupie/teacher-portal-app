@@ -1,15 +1,14 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.google.gms.google-services")
 }
 
 android {
-    namespace = "top.smscloudapp.basic.student"
+    namespace = "top.smscloudapp.basic.teacher"
     compileSdk = 34
     
     defaultConfig {
-            applicationId = "top.smscloudapp.basic.student"
+            applicationId = "top.smscloudapp.basic.teacher"
             minSdk = 21
             targetSdk = 34
             versionCode = 1
@@ -40,9 +39,6 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-
-    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
-    implementation("com.google.firebase:firebase-messaging-ktx")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
