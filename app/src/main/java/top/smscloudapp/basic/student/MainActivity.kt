@@ -20,10 +20,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
 
-    // ✅ Change only if your domain/path changes
-    private val BASE_URL = "https://basic.smscloudapp.top/teacher/login"
-
-    // Avoid sending multiple times
+    // WebView start page
+    private val START_URL = "https://basic.smscloudapp.top/teacher/login"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,20 +43,10 @@ class MainActivity : AppCompatActivity() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 swipeRefresh.isRefreshing = false
-
-                if (view != null && url != null) {
-                    // ✅ After user reaches post-login page, send token once
-                    if (!tokenSent && url.contains(AFTER_LOGIN_PATH)) {
-                        tokenSent = true
-                        sendFcmTokenToLaravel(view)
-                    }
-                }
             }
         }
 
-        swipeRefresh.setOnRefreshListener {
-            webView.reload()
-        }
+        swipeRefresh.setOnRefreshListener { webView.reload() }
 
         // FILE UPLOAD SUPPORT
         webView.webChromeClient = object : WebChromeClient() {
@@ -67,13 +55,15 @@ class MainActivity : AppCompatActivity() {
                 filePathCallback: ValueCallback<Array<Uri>>?,
                 fileChooserParams: FileChooserParams?
             ): Boolean {
-
                 this@MainActivity.filePathCallback?.onReceiveValue(null)
                 this@MainActivity.filePathCallback = filePathCallback
 
                 val intent = fileChooserParams?.createIntent()
-                startActivityForResult(intent!!, 100)
-                return true
+                if (intent != null) {
+                    startActivityForResult(intent, 100)
+                    return true
+                }
+                return false
             }
         }
 
@@ -86,7 +76,7 @@ class MainActivity : AppCompatActivity() {
                 mimeType: String?,
                 contentLength: Long
             ) {
-                if (url == null) return
+                if (url.isNullOrBlank()) return
                 if (url.startsWith("blob:")) return
 
                 val request = DownloadManager.Request(Uri.parse(url))
@@ -118,45 +108,7 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState)
         } else {
-            webView.loadUrl(BASE_URL)
-        }
-    }
-
-    /**
-     * ✅ Sends FCM token to Laravel web route using current WebView session cookie.
-     * Works with Laravel 11 CSRF by reading <meta name="csrf-token"> from the page.
-     *
-     * Laravel route must exist: POST /push/register (middleware: auth)
-     */
-    private fun sendFcmTokenToLaravel(webView: WebView) {
-        FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
-            if (token.isNullOrBlank()) return@addOnSuccessListener
-
-            val js = """
-                (function() {
-                    try {
-                        var meta = document.querySelector('meta[name="csrf-token"]');
-                        var csrf = meta ? meta.getAttribute('content') : null;
-
-                        fetch('$BASE_URL/push/register', {
-                          method: 'POST',
-                          headers: Object.assign({
-                            'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                          }, csrf ? {'X-CSRF-TOKEN': csrf} : {}),
-                          body: JSON.stringify({ device_token: '$token' }),
-                          credentials: 'include'
-                        })
-                        .then(function(r){ return r.json().catch(function(){ return {}; }); })
-                        .then(function(d){ console.log('push saved', d); })
-                        .catch(function(e){ console.log('push error', e); });
-                    } catch (e) {
-                        console.log('push exception', e);
-                    }
-                })();
-            """.trimIndent()
-
-            webView.evaluateJavascript(js, null)
+            webView.loadUrl(START_URL)
         }
     }
 
@@ -180,11 +132,8 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if (webView.canGoBack()) {
-            webView.goBack()
-        } else {
-            super.onBackPressed()
-        }
+        if (webView.canGoBack()) webView.goBack() else super.onBackPressed()
     }
 }
